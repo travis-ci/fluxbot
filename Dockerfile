@@ -14,14 +14,6 @@ RUN apk add --update \
 			which \
 			bash
 
-  # - gcloud -q auth activate-service-account --key-file ${TRAVIS_BUILD_DIR}/client-secret.json
-  # - gcloud -q config set project travis-ci-${PROJECT}-services-1 
-  # - gcloud -q config set compute/zone us-central1
-  # - gcloud container clusters get-credentials travis-ci-services
-  # - gcloud auth configure-docker
-
-
-
 USER fluxbot
 WORKDIR /home/fluxbot 
 
@@ -35,7 +27,6 @@ RUN gcloud -q auth activate-service-account --key-file /home/fluxbot/google-clou
   	gcloud container clusters get-credentials travis-ci-services && \
   	gcloud auth configure-docker
 
-
 RUN yo hubot \
 			--owner="Arek <arek@travis-ci.org>" \
 			--name="Fluxbot" \
@@ -44,6 +35,5 @@ RUN yo hubot \
 			--defaults
 
 ADD scripts/fluxctl.coffee /home/fluxbot/scripts/fluxctl.coffee
-RUN fluxctl --k8s-fwd-ns=flux list-images 
-#RUN bin/hubot
+RUN bin/hubot
 
