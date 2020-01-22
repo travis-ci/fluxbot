@@ -17,7 +17,7 @@ WORKDIR /home/fluxbot
 RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH $PATH:/home/fluxbot/google-cloud-sdk/bin
 
-ADD client-secret.json /home/fluxbot/google-cloud-sdk/client-secret.json
+ADD $TRAVIS_BUILD_DIR/client-secret.json /home/fluxbot/google-cloud-sdk/client-secret.json
 RUN gcloud -q auth activate-service-account --key-file /home/fluxbot/google-cloud-sdk/client-secret.json && \
   	gcloud -q config set project travis-ci-staging-services-1 && \
   	gcloud -q config set compute/zone us-central1 && \
