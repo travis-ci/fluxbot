@@ -1,8 +1,5 @@
 FROM node:13.6.0-alpine3.10
 
-ENV HUBOT_SLACK_TOKEN nope-1234-5678-91011-00e4dd
-ENV HUBOT_NAME fluxbot
-
 RUN adduser -S fluxbot
 RUN wget https://github.com/fluxcd/flux/releases/download/1.17.1/fluxctl_linux_amd64 -O /usr/local/bin/fluxctl
 RUN chmod +x /usr/local/bin/fluxctl
@@ -31,9 +28,9 @@ RUN yo hubot \
 			--owner="Arek <arek@travis-ci.org>" \
 			--name="Fluxbot" \
 			--description="Flux deployment bot" \
-			--adapters=slack \
+			--adapter=slack \
 			--defaults
 
 ADD scripts/fluxctl.coffee /home/fluxbot/scripts/fluxctl.coffee
-RUN bin/hubot
+CMD bin/hubot --adapter slack
 
