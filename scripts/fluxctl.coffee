@@ -6,7 +6,12 @@ module.exports = (robot) ->
 
   robot.router.post "/hubot/:project/:repo/:app/:commit", (request, response) ->
     payload = request.body
+    app = "#{payload.repository.owner_name}/#{payload.repository.name}"
+    build_status = "#{payload.status_message}"
     robot.respond payload
+
+  robot.respond /help$/i, (msg) ->
+    msg.send "fluxbot deploy <repo slug> @ <commit SHA or branch name> as <app name> on <staging or production>"
 
   robot.respond /workloads ?(.*)$/i, (msg) ->
     @exec = require('child_process').exec

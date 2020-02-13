@@ -32,5 +32,5 @@ RUN yo hubot \
 			--defaults
 
 ADD scripts/fluxctl.coffee /home/fluxbot/scripts/fluxctl.coffee
-CMD bin/hubot --adapter slack
 
+CMD bin/hubot --adapter slack
