@@ -4,14 +4,29 @@ apiToken  = process.env.HUBOT_TRAVIS_ACCESS_TOKEN ? null
 
 module.exports = (robot) ->
 
-  robot.router.post "/hubot/:project/:repo/:app/:commit", (request, response) ->
+  robot.router.post "/hubot/:project/:repo/:app/:commit/:status", (request, response) ->
     payload = request.body
-    app = "#{payload.repository.owner_name}/#{payload.repository.name}"
-    build_status = "#{payload.status_message}"
-    robot.respond payload
+    build_url = JSON.stringify(payload.build_url)
+
+    color = "00cc66"
+    build_status = "successful"
+    if request.params.status != "success"
+      color = "#ff0000"
+      build_status = "failed"
+    msg = {
+      attachments: [
+        title: "#{build_status}"
+        color: "#{color}"
+        text: "deployment of #{request.params.repo}/#{request.params.app} @ #{request.params.commit} on #{request.params.project} #{build_status} \n #{build_url}"
+      ]
+    }
+
+    robot.messageRoom("CRNJ9AV27", msg)
+    robot.messageRoom("C03J1T613", msg)
+    response.send 'OK'
 
   robot.respond /help$/i, (msg) ->
-    msg.send "fluxbot deploy <repo slug> @ <commit SHA or branch name> as <app name> on <staging or production>"
+    msg.send "fluxbot deploy <repo slug> @ <commit SHA or branch name> as <k8s deployment name> on <staging or production>"
 
   robot.respond /workloads ?(.*)$/i, (msg) ->
     @exec = require('child_process').exec
@@ -28,39 +43,54 @@ module.exports = (robot) ->
         msg.send error
         msg.send stderr
       else
-        msg.send stdout
+        msg.send 
+          attachments: [
+            title: "Workloads"
+            text: "#{stdout}"
+          ]
 
-  robot.respond /deploy (.*) @ (.*) on (.*)$/i, (msg) ->
+  robot.respond /deploy (.*) @ (.*) as (.*) on (.*)$/i, (msg) ->
     @exec = require('child_process').exec
     app = msg.match[1]
     commit = msg.match[2]
-    project = msg.match[3]
+    deployment_name = msg.match[3]
+    project = msg.match[4]
 
-    requestBody = 
+    requestBody =
       request: {
         config: {
           merge_mode: "deep_merge",
           env: {
-            PROJECT: project
-            K8S_APP_REPO: app
+            PROJECT: "#{project}"
+            K8S_APP_REPO: "#{app}"
+            K8S_APP_REPO_COMMIT: "#{commit}"
+            DEPLOYMENT_NAME: "#{deployment_name}"
           }
         }
       }
-    
+
     data = JSON.stringify(requestBody)
 
-    robot.http("https://api.travis-ci.org/repo/r-arek%2Fspeedtest-pub/requests")
+    robot.http("https://api.travis-ci.com/repo/travis-infrastructure%2Fk8s-deploy/requests")
       .header('Content-Type', 'application/json')
       .header('Accept', 'application/json')
       .header('Travis-API-Version', 3)
       .header('Authorization', "token #{apiToken}")
       .post(data) (err, response, body) ->
-        if err 
+        if err
           msg.send err
         else
-          msg.send 
+          msg.send
+            channel: "CRNJ9AV27" 
             attachments: [
               title: "Status"
               color: "#ffcc66"
-              text: "#{msg.message.user.name}'s deployment of #{app} @ #{commit} on #{project} is running"
+              text: "#{msg.message.user.name}'s deployment of #{app} @ #{commit} as #{deployment_name} on #{project} is running :ship_it_parrot:"
+            ]
+          msg.send
+            channel: "C03J1T613" 
+            attachments: [
+              title: "Status"
+              color: "#ffcc66"
+              text: "#{msg.message.user.name}'s deployment of #{app} @ #{commit} as #{deployment_name} on #{project} is running :ship_it_parrot:"
             ]
