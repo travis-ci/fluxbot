@@ -26,7 +26,8 @@ module.exports = (robot) ->
     response.send 'OK'
 
   robot.respond /help$/i, (msg) ->
-    msg.send "fluxbot deploy <repo slug> @ <commit SHA or branch name> as <k8s deployment name> on <staging or production>"
+    msg.send """Deploy app to k8s: fluxbot deploy <repo slug> @ <commit SHA or branch name> as <k8s deployment name> on <staging or production> \n
+      Manual: https://builders.travis-ci.com/engineering/runbooks/fluxbot/"""
 
   robot.respond /workloads ?(.*)$/i, (msg) ->
     @exec = require('child_process').exec
@@ -45,9 +46,10 @@ module.exports = (robot) ->
       else
         msg.send 
           attachments: [
-            title: "Workloads"
-            text: "#{stdout}"
+            title: "Status"
+            content: "#{stdout}"
           ]
+
 
   robot.respond /deploy (.*) @ (.*) as (.*) on (.*)$/i, (msg) ->
     @exec = require('child_process').exec
