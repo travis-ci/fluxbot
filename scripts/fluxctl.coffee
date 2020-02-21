@@ -21,7 +21,6 @@ module.exports = (robot) ->
       ]
     }
 
-    robot.messageRoom("CRNJ9AV27", msg)
     robot.messageRoom("C03J1T613", msg)
     response.send 'OK'
 
@@ -82,13 +81,6 @@ module.exports = (robot) ->
         if err
           msg.send err
         else
-          msg.send
-            channel: "CRNJ9AV27" 
-            attachments: [
-              title: "Status"
-              color: "#ffcc66"
-              text: "#{msg.message.user.name}'s deployment of #{app} @ #{commit} as #{deployment_name} on #{project} is running :ship_it_parrot:"
-            ]
           msg.send
             channel: "C03J1T613" 
             attachments: [
